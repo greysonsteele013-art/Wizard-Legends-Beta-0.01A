@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Phaser Grass World</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+</head>
+<body>
+
+<script>
+const config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    physics: {
+        default: 'arcade'
+    },
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
+};
+
+let player;
+let cursors;
+let keys;
+
+const game = new Phaser.Game(config);
+
+function preload() {
+    this.load.spritesheet('dude',
+        'https://labs.phaser.io/assets/sprites/dude.png',
+        { frameWidth: 32, frameHeight: 48 }
+    );
+}
+
+function create() {
+
+    // 🌱 PIXEL GRASS BACKGROUND
+    let graphics = this.add.graphics();
+
+    for (let x = 0; x < 800; x += 8) {
+        for (let y = 0; y < 600; y += 8) {
+
+            // Random green shades for pixel effect
+            let colors = [0x3cb043, 0x2e8b57, 0x228b22, 0x4caf50];
+            let color = colors[Math.floor(Math.random() * colors.length)];
+
+            graphics.fillStyle(color, 1);
+            graphics.fillRect(x, y, 8, 8);
+        }
+    }
+
+    // Player
+    player = this.physics.add.sprite(400, 300, 'dude');
+    player.setCollideWorldBounds(true);
+
+    // Animations
+    this.anims.create({
+        key: 'left',
+        frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+        frameRate: 10,
+        repeat: -1
+    });
+
+    this.anims.create({
+        key: 'right',
+        frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+        frameRate: 10,
+        repeat: -1
+    });
+
+    cursors = this.input.keyboard.createCursorKeys();
+    keys = this.input.keyboard.addKeys("W,A,S,D");
+}
+
+function update() {
+    let speed = 160;
+
+    player.setVelocity(0);
+
+    let moving = false;
+
+    if (cursors.left.isDown || keys.A.isDown) {
+        player.setVelocityX(-speed);
+        player.anims.play('left', true);
+        moving = true;
+    }
+    else if (cursors.right.isDown || keys.D.isDown) {
+        player.setVelocityX(speed);
+        player.anims.play('right', true);
+        moving = true;
+    }
+
+    if (cursors.up.isDown || keys.W.isDown) {
+        player.setVelocityY(-speed);
+        moving = true;
+    }
+    else if (cursors.down.isDown || keys.S.isDown) {
+        player.setVelocityY(speed);
+        moving = true;
+    }
+
+    if (!moving) {
+        player.anims.stop();
+        player.setTexture('dude', 4);
+    }
+}
+</script>
+
+</body>
+</html>
